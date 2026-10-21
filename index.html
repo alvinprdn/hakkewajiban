@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Detektif Pancasila - Kelas 4 SD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 100%);
+        }
+        .font-tnr {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .bounce-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+            transition: all 0.2s ease-in-out;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 font-tnr">
+
+    <div id="game-container" class="w-full max-w-4xl bg-white rounded-3xl card-shadow border-4 border-amber-400 overflow-hidden relative min-h-[600px] flex flex-col justify-between">
+        
+        <!-- Header Banner -->
+        <header class="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 p-4 text-white text-center relative shadow-md">
+            <div class="flex justify-between items-center max-w-2xl mx-auto px-2">
+                <div class="flex items-center space-x-2">
+                    <span class="text-3xl">🇮🇩</span>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold tracking-wide drop-shadow">Warga Negara Cerdas!</h1>
+                        <span class="text-xs font-bold bg-yellow-300 text-red-900 px-2 py-0.5 rounded-full">Pendidikan Pancasila Kelas 4 SD</span>
+                    </div>
+                </div>
+                <div id="score-badge" class="bg-yellow-400 text-red-900 font-extrabold px-4 py-1.5 rounded-full text-sm sm:text-base shadow flex items-center gap-1">
+                    ⭐ Skor: <span id="current-score">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 p-4 sm:p-8 flex flex-col justify-center items-center">
+
+            <!-- SCREEN 1: Menu Utama / Select Difficulty -->
+            <div id="screen-menu" class="w-full max-w-lg text-center space-y-6">
+                <div class="space-y-2">
+                    <span class="text-5xl">📜🔎</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Petualangan Konstitusi & Hak Kewajiban</h2>
+                    <p class="text-gray-600 text-sm sm:text-base font-semibold">Pilih tingkat kesulitan untuk menguji pemahamanmu!</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 pt-2">
+                    <!-- Easy -->
+                    <button onclick="startGame('easy')" class="bounce-hover w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-emerald-700 flex items-center justify-between group">
+                        <div class="text-left">
+                            <div class="text-lg sm:text-xl font-bold text-yellow-200">🟢 LEVEL 1: MUDAH</div>
+                            <div class="text-xs sm:text-sm font-normal opacity-90">Mengenal Hak, Kewajiban & UUD 1945</div>
+                        </div>
+                        <span class="text-3xl group-hover:translate-x-1 transition-transform">🌱</span>
+                    </button>
+
+                    <!-- Medium -->
+                    <button onclick="startGame('medium')" class="bounce-hover w-full bg-sky-500 hover:bg-sky-600 text-white font-extrabold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-sky-700 flex items-center justify-between group">
+                        <div class="text-left">
+                            <div class="text-lg sm:text-xl font-bold text-yellow-200">🟡 LEVEL 2: SEDANG</div>
+                            <div class="text-xs sm:text-sm font-normal opacity-90">Hubungan Hak, Kewajiban & Tanggung Jawab</div>
+                        </div>
+                        <span class="text-3xl group-hover:translate-x-1 transition-transform">⚖️</span>
+                    </button>
+
+                    <!-- Hard -->
+                    <button onclick="startGame('hard')" class="bounce-hover w-full bg-purple-500 hover:bg-purple-600 text-white font-extrabold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-purple-700 flex items-center justify-between group">
+                        <div class="text-left">
+                            <div class="text-lg sm:text-xl font-bold text-yellow-200">🔴 LEVEL 3: SULIT</div>
+                            <div class="text-xs sm:text-sm font-normal opacity-90">Detektif Pelanggaran Hak & Konstitusi UUD 1945</div>
+                        </div>
+                        <span class="text-3xl group-hover:translate-x-1 transition-transform">🕵️‍♂️</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: Gameplay Screen -->
+            <div id="screen-game" class="w-full max-w-2xl hidden flex-col items-center">
+                
+                <!-- Progress & Level Indicator -->
+                <div class="w-full flex justify-between items-center mb-4 text-xs sm:text-sm font-bold text-gray-600">
+                    <span id="level-indicator" class="bg-amber-100 text-amber-800 px-3 py-1 rounded-lg border border-amber-300">Level: Mudah</span>
+                    <span id="question-count">Soal 1 dari 5</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 h-3 rounded-full mb-6 overflow-hidden">
+                    <div id="progress-bar" class="bg-amber-400 h-full w-0 transition-all duration-300"></div>
+                </div>
+
+                <!-- Dynamic Question Box -->
+                <div id="question-box" class="w-full bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 sm:p-6 mb-6 text-center shadow-sm">
+                    <!-- Content populated by JS -->
+                </div>
+
+                <!-- Dynamic Options Box -->
+                <div id="options-box" class="w-full grid grid-cols-1 gap-3">
+                    <!-- Options populated by JS -->
+                </div>
+
+                <!-- Feedback Alert -->
+                <div id="feedback-box" class="w-full mt-5 p-4 rounded-xl hidden text-center font-semibold text-sm sm:text-base border-2">
+                </div>
+
+                <button id="btn-next" onclick="nextQuestion()" class="hidden mt-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold px-8 py-3 rounded-full shadow-md hover:from-amber-600 hover:to-orange-600 transition-all text-lg">
+                    Lanjut Soal Berikutnya ➡️
+                </button>
+            </div>
+
+            <!-- SCREEN 3: Result Screen -->
+            <div id="screen-result" class="w-full max-w-md text-center hidden space-y-6">
+                <div class="space-y-2">
+                    <span id="result-emoji" class="text-6xl animate-bounce inline-block">🏆</span>
+                    <h2 class="text-3xl font-bold text-slate-800">Misi Selesai!</h2>
+                    <p id="result-subtitle" class="text-gray-600 font-semibold">Kamu adalah Detektif Konstitusi Cilik!</p>
+                </div>
+
+                <div class="bg-amber-50 p-6 rounded-2xl border-2 border-amber-200 space-y-3">
+                    <p class="text-gray-600 font-bold">Total Skor Kamu:</p>
+                    <p id="final-score" class="text-5xl font-bold text-amber-500">100</p>
+                    <p id="result-badge" class="text-sm font-bold text-emerald-700 bg-emerald-100 py-1.5 px-3 rounded-full inline-block">Paham Hak & Kewajiban!</p>
+                </div>
+
+                <div class="flex gap-3 justify-center">
+                    <button onclick="showMenu()" class="bounce-hover bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl shadow">
+                        🏠 Menu Utama
+                    </button>
+                    <button onclick="restartCurrentLevel()" class="bounce-hover bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow">
+                        🔄 Main Lagi
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-100 border-t p-3 text-center text-xs text-gray-500 font-semibold">
+            Kurikulum Merdeka • Pendidikan Pancasila Kelas 4 SD • UUD 1945, Hak & Kewajiban
+        </footer>
+    </div>
+
+    <script>
+        // Tailored specifically for SD Grade 4 Syllabus (Pendidikan Pancasila)
+        const questionsData = {
+            easy: [
+                {
+                    question: "Hukum dasar tertulis tertinggi yang menjadi pedoman aturan di Negara Indonesia adalah...",
+                    options: [
+                        { text: "Undang-Undang Dasar (UUD) 1945", correct: true },
+                        { text: "Tata Tertib Kelas", correct: false },
+                        { text: "Jadwal Pelajaran Sekolah", correct: false }
+                    ],
+                    explanation: "UUD 1945 adalah konstitusi tertulis tertinggi yang memuat aturan dasar bernegara di Indonesia."
+                },
+                {
+                    question: "Sesuatu yang Harus kita lakukan dengan rasa penuh tanggung jawab dinamakan...",
+                    options: [
+                        { text: "Hak", correct: false },
+                        { text: "Kewajiban", correct: true },
+                        { text: "Hadiah", correct: false }
+                    ],
+                    explanation: "Kewajiban adalah segala sesuatu yang wajib dilaksanakan sebelum kita menuntut hak."
+                },
+                {
+                    question: "Di bawah ini yang merupakan contoh HAK siswa saat berada di sekolah adalah...",
+                    options: [
+                        { text: "Membersihkan kelas bersama", correct: false },
+                        { text: "Mendapatkan ilmu dan bimbingan dari guru", correct: true },
+                        { text: "Menjaga ketenangan ruang perpustakaan", correct: false }
+                    ],
+                    explanation: "Mendapatkan pelajaran dan pengajaran dari guru adalah HAK setiap murid di sekolah."
+                },
+                {
+                    question: "Manakah contoh KEWAJIBAN anak saat berada di lingkungan rumah?",
+                    options: [
+                        { text: "Membantu merapikan tempat tidur sendiri", correct: true },
+                        { text: "Mendapatkan makanan bergizi dari orang tua", correct: false },
+                        { text: "Memperoleh waktu untuk bermain", correct: false }
+                    ],
+                    explanation: "Membantu orang tua dan merapikan kamar adalah kewajiban anak di rumah."
+                },
+                {
+                    question: "Sesuatu yang patut atau layak kita terima setelah melaksanakan kewajiban dinamakan...",
+                    options: [
+                        { text: "Hak", correct: true },
+                        { text: "Tugas", correct: false },
+                        { text: "Hukuman", correct: false }
+                    ],
+                    explanation: "Hak adalah segala sesuatu yang berhak kita dapatkan setelah menjalankan kewajiban."
+                }
+            ],
+            medium: [
+                {
+                    question: "Bagaimanakah hubungan yang benar antara HAK dan KEWAJIBAN sebagai warga negara?",
+                    options: [
+                        { text: "Kita menuntut hak terlebih dahulu baru mau melakukan kewajiban", correct: false },
+                        { text: "Hak dan Kewajiban harus dilaksanakan secara seimbang", correct: true },
+                        { text: "Hanya melaksanakan kewajiban tanpa mau menerima hak", correct: false }
+                    ],
+                    explanation: "Hak dan kewajiban harus dilaksanakan secara seimbang. Kita harus mendahulukan kewajiban sebelum meminta hak."
+                },
+                {
+                    question: "Siti ingin mendapatkan HAK berupa lingkungan sekolah yang bersih dan sejuk. Apa KEWAJIBAN yang harus dilakukan Siti?",
+                    options: [
+                        { text: "Membuang sampah pada tempatnya dan menyiram tanaman", correct: true },
+                        { text: "Membiarkan dedaunan berserakan di halaman", correct: false },
+                        { text: "Membuang botol plastik di bawah meja kelas", correct: false }
+                    ],
+                    explanation: "Untuk menikmati lingkungan bersih (Hak), kita berkewajiban merawat dan menjaga kebersihan (Kewajiban)."
+                },
+                {
+                    question: "Manakah contoh SIKAP BERTANGGUNG JAWAB saat menggunakan fasilitas umum seperti taman kota?",
+                    options: [
+                        { text: "Memetik bunga untuk dibawa pulang", correct: false },
+                        { text: "Menjaga kebersihan dan tidak merusak fasilitas taman", correct: true },
+                        { text: "Mencoret-coret bangku taman", correct: false }
+                    ],
+                    explanation: "Merawat serta tidak merusak fasilitas umum adalah bentuk tanggung jawab warga negara yang baik."
+                },
+                {
+                    question: "Eko melihat teman sekelasnya kesulitan saat piket kelas. Sikap bertanggung jawab Eko adalah...",
+                    options: [
+                        { text: "Membantu temannya agar piket selesai lebih cepat", correct: true },
+                        { text: "Langsung pulang sambil tertawa", correct: false },
+                        { text: "Mengejek temannya yang sedang menyapu", correct: false }
+                    ],
+                    explanation: "Membantu teman piket menunjukkan sikap bertanggung jawab terhadap kebersihan kelas bersama."
+                },
+                {
+                    question: "Apa yang akan terjadi jika dalam masyarakat setiap orang hanya menuntut HAK tanpa mau menjalankan KEWAJIBAN?",
+                    options: [
+                        { text: "Masyarakat menjadi sangat rukun", correct: false },
+                        { text: "Terjadi ketidakadilan, kekacauan, dan perselisihan", correct: true },
+                        { text: "Semua orang akan menjadi makin pintar", correct: false }
+                    ],
+                    explanation: "Jika kewajiban diabaikan, ketertiban akan terganggu dan timbul ketidakadilan dalam masyarakat."
+                }
+            ],
+            hard: [
+                {
+                    question: "Pasal 31 Ayat 1 UUD 1945 menjamin bahwa 'Setiap warga negara berhak mendapat pendidikan'. Manakah tindakan yang melanggar pasal tersebut?",
+                    options: [
+                        { text: "Anak usia sekolah dilarang bersekolah dan dipaksa bekerja", correct: true },
+                        { text: "Pemerintah membangun sekolah di daerah terpencil", correct: false },
+                        { text: "Siswa belajar dengan giat di dalam kelas", correct: false }
+                    ],
+                    explanation: "Melarang anak bersekolah merupakan bentuk pelanggaran terhadap hak pendidikan yang dijamin pasal 31 UUD 1945."
+                },
+                {
+                    question: "Analisis Kasus: Seseorang mengendarai sepeda motor dengan kecepatan tinggi dan menerobos lampu merah. Perbuatan ini merupakan contoh...",
+                    options: [
+                        { text: "Pelaksanaan hak di jalan raya", correct: false },
+                        { text: "Pelanggaran kewajiban menaati tata tertib lalu lintas", correct: true },
+                        { text: "Sikap bertanggung jawab di jalan umum", correct: false }
+                    ],
+                    explanation: "Menerobos lampu merah melanggar kewajiban mematuhi lalu lintas dan membahayakan keselamatan orang lain."
+                },
+                {
+                    question: "Sesuai Pasal 28H UUD 1945, setiap orang berhak hidup sejahtera dan mendapatkan lingkungan hidup yang baik dan sehat. Manakah contoh PELANGGARAN kewajiban yang merusak hak tersebut?",
+                    options: [
+                        { text: "Menanam pohon di pekarangan rumah", correct: false },
+                        { text: "Membuang sampah dan limbah kimia ke sungai", correct: true },
+                        { text: "Mengadakan kerja bakti membersihkan selokan", correct: false }
+                    ],
+                    explanation: "Membuang sampah/limbah ke sungai merusak lingkungan dan merenggut hak warga lain atas air bersih."
+                },
+                {
+                    question: "Doni tidak mau mendengarkan pendapat temannya saat musyawarah pemilihan ketua kelas dan memaksakan kehendaknya. Tindakan Doni melanggar kewajiban dalam...",
+                    options: [
+                        { text: "Menghargai dan menghormati pendapat orang lain", correct: true },
+                        { text: "Menjaga kebersihan lingkungan", correct: false },
+                        { text: "Mematuhi rambu-rambu lalu lintas", correct: false }
+                    ],
+                    explanation: "Dalam musyawarah, kita wajib menghargai pendapat orang lain dan tidak memaksakan kehendak."
+                },
+                {
+                    question: "Mengapa Konstitusi (UUD 1945) sangat penting bagi Bangsa Indonesia?",
+                    options: [
+                        { text: "Agar dapat dijadikan hiasan di gedung pemerintahan", correct: false },
+                        { text: "Sebagai pedoman hukum tertulis untuk mengatur hak, kewajiban, dan ketertiban negara", correct: true },
+                        { text: "Agar negara lain takut dengan Indonesia", correct: false }
+                    ],
+                    explanation: "UUD 1945 menjadi landasan hukum utama agar kehidupan berbangsa teratur, adil, dan harmonis."
+                }
+            ]
+        };
+
+        let currentLevel = 'easy';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        // Audio Effects using Synth Fallback
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                    osc.frequency.setValueAtTime(174.61, ctx.currentTime + 0.1); // F3
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        function showMenu() {
+            document.getElementById('screen-menu').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-result').classList.add('hidden');
+        }
+
+        function startGame(level) {
+            currentLevel = level;
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('current-score').innerText = score;
+
+            document.getElementById('screen-menu').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('flex');
+            document.getElementById('screen-result').classList.add('hidden');
+
+            const levelText = level === 'easy' ? '🟢 Level 1: Mudah' : level === 'medium' ? '🟡 Level 2: Sedang' : '🔴 Level 3: Sulit';
+            document.getElementById('level-indicator').innerText = levelText;
+
+            loadQuestion();
+        }
+
+        function restartCurrentLevel() {
+            startGame(currentLevel);
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            const questions = questionsData[currentLevel];
+            const q = questions[currentQuestionIndex];
+
+            // Progress Bar Update
+            document.getElementById('question-count').innerText = `Soal ${currentQuestionIndex + 1} dari ${questions.length}`;
+            const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Reset UI
+            document.getElementById('btn-next').classList.add('hidden');
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.classList.add('hidden');
+            feedbackBox.className = "w-full mt-5 p-4 rounded-xl text-center font-semibold text-sm sm:text-base border-2 hidden";
+
+            // Render Question Text
+            const questionBox = document.getElementById('question-box');
+            questionBox.innerHTML = `
+                <div class="text-xs uppercase font-extrabold tracking-wider text-amber-600 mb-1">Pertanyaan ${currentQuestionIndex + 1}</div>
+                <h3 class="text-lg sm:text-xl font-bold text-slate-800 leading-relaxed">${q.question}</h3>
+            `;
+
+            // Render Options
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `bounce-hover w-full p-4 rounded-xl text-left font-bold text-slate-700 bg-white border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 shadow-sm transition-all flex items-center justify-between group`;
+                btn.onclick = () => selectOption(index, btn);
+                btn.innerHTML = `
+                    <span class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center group-hover:bg-amber-400 group-hover:text-white transition-colors">
+                            ${String.fromCharCode(65 + index)}
+                        </span>
+                        <span class="text-sm sm:text-base">${opt.text}</span>
+                    </span>
+                    <span class="status-icon text-xl"></span>
+                `;
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, btnElement) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const questions = questionsData[currentLevel];
+            const q = questions[currentQuestionIndex];
+            const selectedOpt = q.options[selectedIndex];
+            const optionsButtons = document.getElementById('options-box').children;
+            const feedbackBox = document.getElementById('feedback-box');
+
+            if (selectedOpt.correct) {
+                // Correct Choice
+                playSound('correct');
+                score += 20;
+                document.getElementById('current-score').innerText = score;
+
+                btnElement.classList.remove('border-slate-200', 'bg-white');
+                btnElement.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+                btnElement.querySelector('.status-icon').innerText = '✅';
+
+                feedbackBox.classList.remove('hidden');
+                feedbackBox.classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-800');
+                feedbackBox.innerHTML = `🎉 <b>BENAR!</b> ${q.explanation}`;
+            } else {
+                // Wrong Choice - Cleaned display text (no misleading praise)
+                playSound('wrong');
+                btnElement.classList.remove('border-slate-200', 'bg-white');
+                btnElement.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+                btnElement.querySelector('.status-icon').innerText = '❌';
+
+                // Highlight Correct Answer
+                q.options.forEach((opt, idx) => {
+                    if (opt.correct) {
+                        optionsButtons[idx].classList.remove('border-slate-200');
+                        optionsButtons[idx].classList.add('border-emerald-500', 'bg-emerald-50');
+                        optionsButtons[idx].querySelector('.status-icon').innerText = '✅';
+                    }
+                });
+
+                feedbackBox.classList.remove('hidden');
+                feedbackBox.classList.add('bg-rose-100', 'border-rose-300', 'text-rose-800');
+                feedbackBox.innerHTML = `💡 <b>KURANG TEPAT!</b> ${q.explanation}`;
+            }
+
+            document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            const questions = questionsData[currentLevel];
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = score;
+
+            const badge = document.getElementById('result-badge');
+            const subtitle = document.getElementById('result-subtitle');
+            const emoji = document.getElementById('result-emoji');
+
+            if (score === 100) {
+                emoji.innerText = '🏆';
+                subtitle.innerText = 'Luar Biasa! Kamu Detektif Konstitusi Sejati!';
+                badge.innerText = '🌟 Skor Sempurna - Paham Hak & Kewajiban!';
+                badge.className = 'text-sm font-bold text-emerald-800 bg-emerald-100 py-1.5 px-3 rounded-full inline-block';
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } else if (score >= 60) {
+                emoji.innerText = '⭐';
+                subtitle.innerText = 'Hebat! Pengetahuan Pancasila Kamu Sangat Baik!';
+                badge.innerText = '👍 Sangat Paham Konstitusi';
+                badge.className = 'text-sm font-bold text-sky-800 bg-sky-100 py-1.5 px-3 rounded-full inline-block';
+            } else {
+                emoji.innerText = '📚';
+                subtitle.innerText = 'Ayo Pelajari Lagi Soal UUD 1945 & Hak Kewajiban!';
+                badge.innerText = '💪 Semangat Belajar Lagi!';
+                badge.className = 'text-sm font-bold text-amber-800 bg-amber-100 py-1.5 px-3 rounded-full inline-block';
+            }
+        }
+    </script>
+</body>
+</html>
